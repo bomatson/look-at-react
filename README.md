@@ -1,4 +1,4 @@
-A Prosperous Alternative to Marionette
+A Prosperous Look at ReactJS
 =======================
 
 To view this presentation:
