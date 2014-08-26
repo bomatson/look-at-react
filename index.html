@@ -21,7 +21,7 @@
 
 class: center, middle
 
-# A Prosperous Alternative to Marionette
+# A Prosperous Look at ReactJS
 
 ---
 
@@ -29,21 +29,21 @@ class: center, middle
 
 * Marionette does an incredible job of managing complex view structure
 
-* However, it feels like a stronger tool than necessary given the requirements of the Borrower Funnel
+* We acknowledge the awesome abstractions that Marionette provides us as developers
 
-* Sort of like bringing a bazooka to a gun fight. Although useful, it might be little much!
+* Given the requirements of the Borrower Funnel on mobile web, we'd love to introduce an alternative perspective to views: ReactJS
 
 ---
 
 class: center, middle
 
-# Enter ReactJS
+# ReactJS: The Good Parts
 (brief intro)
 ---
 
 # Virtual DOM
 
-Each HTML element is wrapped in a ReactDOM object, keeping us from directly manipulating the DOM
+Each HTML element is wrapped in a ReactDOM object, keeping us from manipulating the DOM directly
 
 ![Virtual Dom](virtual_dom.png)
 
@@ -82,7 +82,7 @@ var Rate = React.createClass({
 
 # Slimmer HTML
 
-You will not need to predefine templates ahead of time in html, everything renders in a parent container
+Not necessary to define templates ahead of time in html, everything renders in a parent container
 
 ```html
 <html>
@@ -104,7 +104,6 @@ You will not need to predefine templates ahead of time in html, everything rende
   </body>
 </html>
 ```
-This parent component has a "state" that changes, but that is the only mutable property on a component.
 
 ---
 
@@ -193,7 +192,7 @@ var RateForm = React.createClass({
   }
 });
 ```
-vs.
+VS.
 
 ````javascript
 this.listenTo(BorrowerFunnel.vent, 'rate:submitted', function(response) {
@@ -214,7 +213,7 @@ According to the docs, it has the same interface as the browser's native event, 
 
 # Validations
 
-We can use React's `mixins` object to handle validations on the client. An example:
+We can use React's `mixins` concept to handle validations on the client. An example:
 
 ```jsx
 var PersonalInfo = React.createClass({
@@ -238,7 +237,7 @@ var PersonalInfo = React.createClass({
 
 # Routing
 
-For our project, we will definitely need a routing solution (since users could be coming from other partner pages down the line).
+For our project, we will likely need a routing solution (since users could be coming from other partner pages down the line)
 
 We can adopt [Backbone.Router](https://medium.com/react-tutorials/react-backbone-router-c00be0cf1592) to achieve this, or use one of the many reative routing solutions out there:
 
@@ -249,9 +248,9 @@ We can adopt [Backbone.Router](https://medium.com/react-tutorials/react-backbone
 ---
 
 class: center, middle
-# Recommendation
+# An Idea
 
-Using a combination of React and Backbone.Router would reduce the amount of code, but still give us the ability to manage validation and views.
+Using a combination of React and Backbone would reduce the amount of code, but still give us the ability to manage validation and views.
 
 ---
 
