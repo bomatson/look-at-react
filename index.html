@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>A Prosperous Alternative to Marionette</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <style type="text/css">
+      @import url(http://fonts.googleapis.com/css?family=Yanone+Kaffeesatz);
+      @import url(http://fonts.googleapis.com/css?family=Droid+Serif:400,700,400italic);
+      @import url(http://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic);
+
+      body { font-family: 'Droid Serif'; }
+      h1, h2, h3 {
+        font-family: 'Yanone Kaffeesatz';
+        font-weight: normal;
+      }
+      .remark-code, .remark-inline-code { font-family: 'Ubuntu Mono'; }
+    </style>
+  </head>
+  <body>
+    <textarea id="source">
+
+class: center, middle
+
+# A Prosperous Alternative to Marionette
+
+---
+
+# The Situation
+
+* Marionette does an incredible job of managing complex view structure
+
+* However, it feels like a stronger tool than necessary given the requirements of the Borrower Funnel
+
+* Sort of like bringing a bazooka to a gun fight. Although useful, it might be little much!
+
+---
+
+class: center, middle
+
+# Enter ReactJS
+(brief intro)
+---
+
+# Virtual DOM
+
+Each HTML element is wrapped in a ReactDOM object, keeping us from directly manipulating the DOM
+
+![Virtual Dom](virtual_dom.png)
+
+When data changes, React will quickly diff the current state of the UI with the desired state and compute the minimal set of DOM mutations (which are quite expensive) to achieve it
+
+Also, the library batches together these mutations such that the UI is updated all at once in a single animation frame
+
+---
+
+# Perspective
+
+From the React team:
+
+ > "Lots of people use React as the V in MVC.
+ > Since React makes no assumptions about the rest of your technology stack,
+ > it's easy to try it out on a small feature in an existing project."
+
+By default, each component is in charge of rendering itself and will re-render if data changes (from the user or from a server).
+
+````jsx
+var Rate = React.createClass({
+  render: function() {
+    return (
+      <div className="rate">
+        <h2 className="rateName">
+          {this.props.name}
+        </h2>
+        {this.props.rate}
+      </div>
+    );
+  }
+});
+````
+
+---
+
+# Slimmer HTML
+
+You will not need to predefine templates ahead of time in html, everything renders in a parent container
+
+```html
+<html>
+  <head>
+    <title>Prosper!</title>
+    <link rel="stylesheet" href="build/bootstrap.min.css">
+    <script src="build/react.min.js"></script>
+    <!-- <script src="build/JSXTransformer.js"></script> -->
+    <script src="build/jquery-2.1.1.min.js"></script>
+  </head>
+  <body>
+    <div class='container'>
+      <div id="funnel"></div>
+    </div>
+    <script src='build/rateResults.js'></script>
+    <script src='build/rateForm.js'></script>
+    <script src='build/personalInfo.js'></script>
+    <script src='build/app.js'></script>
+  </body>
+</html>
+```
+This parent component has a "state" that changes, but that is the only mutable property on a component.
+
+---
+
+# Testable Code
+
+Simply put, the nature of a React component makes it relatively simple to unit test.
+
+The library provides `React.addons.ReactTestUtils`, which help mock out React components and its default behaviors
+
+Plays well with Jasmine, Jest, Mocha, pretty much any testing framework *(according to them)*
+
+From their docs, simulating the a click and keyDown event:
+
+```javascript
+var node = this.refs.input.getDOMNode();
+React.addons.TestUtils.Simulate.click(node);
+React.addons.TestUtils.Simulate.change(node);
+React.addons.TestUtils.Simulate.keyDown(node, {key: "Enter"});
+```
+
+---
+
+class: center, middle
+
+# Shortcomings of ReactJS
+
+---
+
+# JSX
+
+While optional, the community typically writes React components in JSX, which are transformed into JS (either on the browser or locally built)
+
+This means each js file needs to begin with `/** @jsx React.DOM */` in order to be transformed
+
+You could pretty easily write with React in pure javascript, but it begins to feel strange to be combining DOM elements + js:
+
+```javascript
+var Rate = React.createClass({displayName: 'Rate',
+  render: function() {
+    return (
+      React.DOM.div({className: "rate"},
+        React.DOM.h2({className: "rateName"},
+          this.props.name
+        ),
+        this.props.rate
+      )
+    );
+  }
+});
+```
+
+---
+
+# Difficult to Debug
+
+I needed to install a React DevTools plugin to have proper debugging in my console, which is annoying (but the consequence of not messing with the DOM directly)
+
+![Debugging](debugging.png)
+
+---
+
+class: center, middle
+
+# Talking Points
+
+---
+
+# Event System
+
+ReactJS passes around callbacks while Marionette uses a pub/sub structure:
+
+```jsx
+var RateForm = React.createClass({
+  handleSubmit: function(e) {
+    //handle event here
+  },
+  render: function() {
+    return (
+      <form className='rateForm' onSubmit={this.handleSubmit}>
+        <input type='number' placeholder='Loan Amount' ref='amount'/>
+        <input type='text' placeholder='Loan Purpose' ref='purpose'/>
+        <input type='text' placeholder='Credit Score' ref='creditScore'/>
+        <input type='submit' value='Post' />
+      </form>
+    );
+  }
+});
+```
+vs.
+
+````javascript
+this.listenTo(BorrowerFunnel.vent, 'rate:submitted', function(response) {
+  this.showRate(response);
+});
+
+BorrowerFunnel.vent.trigger('rate:submitted', response);
+````
+
+---
+# Event System
+
+ReactJS passes a `SyntheticEvent` object to each handler. `SyntheticEvent` is a cross-browser wrapper around the browser's native event.
+
+According to the docs, it has the same interface as the browser's native event, including stopPropagation() and preventDefault(), except the events work identically across all browsers.
+
+---
+
+# Validations
+
+We can use React's `mixins` object to handle validations on the client. An example:
+
+```jsx
+var PersonalInfo = React.createClass({
+  mixins: [ValidationMixin],
+
+  validators: {
+    name: function (name) {
+      return name.length > 0;
+    }
+  },
+
+  // ...
+
+});
+```
+
+[See the full example here](http://stackoverflow.com/questions/21854938/using-mixins-vs-components-for-code-reuse-in-facebook-react)
+
+[See here for more information on Mixins](http://facebook.github.io/react/docs/reusable-components.html#mixins)
+---
+
+# Routing
+
+For our project, we will definitely need a routing solution (since users could be coming from other partner pages down the line).
+
+We can adopt [Backbone.Router](https://medium.com/react-tutorials/react-backbone-router-c00be0cf1592) to achieve this, or use one of the many reative routing solutions out there:
+
+[React Router](https://github.com/rackt/react-router)
+
+[React Router Component](https://github.com/andreypopp/react-router-component)
+
+---
+
+class: center, middle
+# Recommendation
+
+Using a combination of React and Backbone.Router would reduce the amount of code, but still give us the ability to manage validation and views.
+
+---
+
+#fin.
+    </textarea>
+    <script src="http://gnab.github.io/remark/downloads/remark-latest.min.js" type="text/javascript">
+    </script>
+    <script type="text/javascript">
+      var slideshow = remark.create();
+    </script>
